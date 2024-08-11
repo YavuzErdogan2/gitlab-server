@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network "private_network", ip: "192.168.50.4"
+  config.vm.network "private_network", ip: "192.168.50.4", adapter: 2
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -57,13 +57,14 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  # config.vm.provider "virtualbox" do |vb|
+   config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
+     vb.memory = "4096"
+     vb.cpus = 2
+   end
   #
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -87,29 +88,5 @@ Vagrant.configure("2") do |config|
 
     # Configureer en start GitLab
     sudo gitlab-ctl reconfigure
-
-    # Wacht tot GitLab is opgestart
-    echo "Wachten tot GitLab opstart..."
-    sleep 120
-
-    # Configureer GitLab URL en root password
-    GITLAB_URL="http://192.168.50.4"
-    ROOT_PASSWORD="Admin@123"
-
-    # Update external_url in GitLab configuratie
-    sudo sed -i "s|external_url 'http://gitlab.example.com'|external_url '$GITLAB_URL'|g" /etc/gitlab/gitlab.rb
-    sudo gitlab-ctl reconfigure
-
-    # Stel root wachtwoord in
-    sudo gitlab-rake "gitlab:password:reset[root] <<< $ROOT_PASSWORD"
-
-    # Maak een nieuwe repository aan via GitLab API
-    curl --request POST "$GITLAB_URL/api/v4/projects?name=demo-app" --header "PRIVATE-TOKEN: $ROOT_PASSWORD"
-
-    # Navigeer naar de gedeelde map en voer het script uit
-    cd /vagrant/shared
-
-    # Voer het script uit om de demo-applicatie te initialiseren en te pushen
-    ./install_gitlab.sh
   SHELL
 end
